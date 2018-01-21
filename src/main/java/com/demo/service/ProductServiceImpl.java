@@ -3,6 +3,7 @@ package com.demo.service;
 import com.demo.dao.ProductRepository;
 import com.demo.model.Product;
 import com.demo.utils.ReadWriteUsingPOI;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,8 +56,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByContent() {
-        return null;
+    public List<Product> findByContent(String content) {
+       return productRepository.getAllMatchedProducts(content);
+
+       // return null;
     }
     @Override
     public void saveProducts() throws Exception{

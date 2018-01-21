@@ -2,6 +2,7 @@ package com.demo.controllers;
 
 import com.demo.model.Product;
 import com.demo.service.ProductService;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,7 +30,7 @@ public class ElasticSearchController {
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Product> getCustomElements() throws Exception {
 
-        List<Product> product1 = productService.findAll();
+            List<Product> product1 = productService.findAll();
         return product1;
     }
     @RequestMapping(method = RequestMethod.DELETE, value="/{id}" ,produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,8 +40,8 @@ public class ElasticSearchController {
     @RequestMapping(method = RequestMethod.GET, value = "/partial/{content}",produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Product> getCustomElements(@PathVariable("content") String content) throws Exception {
 
-        List<Product> product1 = productService.findByContent();
-        return product1;
+        List<Product> al = productService.findByContent(content);
+        return al;
     }
     @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveProductsBulkFromExcel() throws Exception {
@@ -48,5 +49,6 @@ public class ElasticSearchController {
         productService.saveProducts();
 
     }
+
 }
 

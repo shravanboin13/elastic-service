@@ -30,10 +30,7 @@ public class Application implements CommandLineRunner{
 
         printElasticSearchInfo();
 
-       /* productService.save(new Product("1001", "Elasticsearch Basics", "Rambabu Posa", "23-FEB-2017"));
-        productService.save(new Product("1002", "Apache Lucene Basics", "Rambabu Posa", "13-MAR-2017"));
-        productService.save(new Product("1003", "Apache Solr Basics", "Rambabu Posa", "21-MAR-2017"));
-*/
+
         //fuzzey search
 
 

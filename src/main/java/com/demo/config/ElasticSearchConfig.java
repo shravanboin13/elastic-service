@@ -1,5 +1,6 @@
 package com.demo.config;
 
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,17 +26,29 @@ public class ElasticSearchConfig {
     @Bean
     public Client client() throws Exception {
 
-        Settings esSettings = Settings.settingsBuilder()
+        Settings esSettings = Settings.settingsBuilder().put("client.transport.sniff", true).put("name","Martha Johansson")
                 .put("cluster.name", esClusterName)
                 .build();
 
         //https://www.elastic.co/guide/en/elasticsearch/guide/current/_transport_client_versus_node_client.html
-        return TransportClient.builder()
+      /*  Settings indexSettings = Settings.settingsBuilder()
+                .put("number_of_shards", 5)
+                .put("number_of_replicas", 1)
+                .build();
+      */  //CreateIndexRequest indexRequest = new CreateIndexRequest("products", indexSettings);
+        Client client =TransportClient.builder()
                 .settings(esSettings)
                 .build()
                 .addTransportAddress(
                         new InetSocketTransportAddress(InetAddress.getByName(esHost), esPort));
-    }
+        //client.admin().indices().create(indexRequest).actionGet();
+       /* return TransportClient.builder()
+                .settings(esSettings)
+                .build()
+                .addTransportAddress(
+                        new InetSocketTransportAddress(InetAddress.getByName(esHost), esPort));
+    */
+    return client;}
 
     @Bean
     public ElasticsearchOperations elasticsearchTemplate() throws Exception {

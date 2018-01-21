@@ -9,10 +9,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.util.List;
 import java.util.Map;
 
-@Document(indexName="test",type="products")
+@Document(indexName="products",type="products")
 public class Product {
     @Id
     private String id;
+    @Field
     private String name;
     private String description;
     //private String place;
@@ -20,10 +21,11 @@ public class Product {
     private String subCategory;
     private double price;
     private String code;
+    private String brand;
    /* @Field(type=FieldType.Object, index= FieldIndex.not_analyzed)
     Map<String,String> attributes;
 */
-   private String brand;
+
 
     public Product() {
 
