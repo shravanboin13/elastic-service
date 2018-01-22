@@ -1,6 +1,8 @@
 package com.demo.dao;
 
 import com.demo.model.Product;
+import com.demo.model.ProductDTO;
+import org.apache.lucene.index.Terms;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -18,42 +20,62 @@ import org.springframework.data.elasticsearch.core.ResultsExtractor;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.terms;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import java.util.Map;
 
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
     @Autowired
     ElasticsearchOperations elasticsearchTemplate;
     @Override
-    public List<Product> getAllMatchedProducts(String content) {
+    public ProductDTO getAllMatchedProducts(String content) {
 
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
-              //  .withFilter(termQuery("category",content))
-                .withQuery(matchAllQuery())
+                .withQuery(multiMatchQuery(content,"category","subCategory","name"))
                 .withSearchType(SearchType.DEFAULT)
                 .withIndices("products").withTypes("products")
-                //.addAggregation(terms("name").field("name"))
-               .addAggregation(AggregationBuilders.filter("test").filter(QueryBuilders.termQuery("category",content)))//.
-                        //addAggregation(terms("name").field("name"))
-                .build();
-         List<Product> al =null;
+                .addAggregation(terms("color").field("color"))
+                .addAggregation(terms("brand").field("brand"))
+                .addAggregation(terms("size").field("size"))
+                 .build();
+         ProductDTO result =null;
         // when
        // return elasticsearchTemplate.query(searchQuery,new Re);
-         al = elasticsearchTemplate.query(searchQuery, new ResultsExtractor<List<Product>>() {
+         result = elasticsearchTemplate.query(searchQuery, new ResultsExtractor<ProductDTO>() {
             @Override
-            public List<Product> extract(SearchResponse response) {
-                 return new DefaultResultMapper().mapResults(response, Product.class, new PageRequest( 0, 15)).getContent();
-                 //return al;
-                //return response.getAggregations();
+            public ProductDTO extract(SearchResponse response) {
+                ProductDTO productDTO = new ProductDTO();
+                Map<String,List<String>> attributes = new HashMap<String,List<String>>();
+                List<String> attributeValuues  = new ArrayList<String>();
+               org.elasticsearch.search.aggregations.bucket.terms.Terms termsColours  = response.getAggregations().get("color");
+                org.elasticsearch.search.aggregations.bucket.terms.Terms termsBrands  = response.getAggregations().get("brand");
+                org.elasticsearch.search.aggregations.bucket.terms.Terms termsSize  = response.getAggregations().get("size");
+
+                setIntoMap(attributes, termsColours, "color");
+                setIntoMap(attributes, termsBrands, "brand");
+                setIntoMap(attributes, termsSize, "size");
+
+                List<Product> alProduct =  new DefaultResultMapper().
+                          mapResults(response, Product.class, new PageRequest( 0, 15)).getContent();
+                productDTO.setAttributes(attributes);
+                productDTO.setResult(alProduct);
+                return productDTO;
             }
         });
 
-return al;
+        return result;
+    }
+
+    private void setIntoMap(Map<String,List<String>> attributesMap , org.elasticsearch.search.aggregations.bucket.terms.Terms terms,String attributeName) {
+        List<String> attributeValueList = new ArrayList<String>();
+        for(org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket:terms.getBuckets()){
+            attributeValueList.add((String)bucket.getKey());
+        }
+        attributesMap.put(attributeName,attributeValueList);
     }
 }

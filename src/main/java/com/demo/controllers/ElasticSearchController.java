@@ -1,6 +1,7 @@
 package com.demo.controllers;
 
 import com.demo.model.Product;
+import com.demo.model.ProductDTO;
 import com.demo.service.ProductService;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,9 @@ public class ElasticSearchController {
             productService.delete(id);
         }
     @RequestMapping(method = RequestMethod.GET, value = "/partial/{content}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Product> getCustomElements(@PathVariable("content") String content) throws Exception {
+    public ProductDTO getCustomElements(@PathVariable("content") String content) throws Exception {
 
-        List<Product> al = productService.findByContent(content);
+        ProductDTO al = productService.findByContent(content);
         return al;
     }
     @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)

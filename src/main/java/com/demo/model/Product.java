@@ -13,7 +13,7 @@ import java.util.Map;
 public class Product {
     @Id
     private String id;
-    @Field
+    @Field(type = FieldType.String)
     private String name;
     private String description;
     //private String place;
