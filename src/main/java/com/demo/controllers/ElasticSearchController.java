@@ -1,8 +1,10 @@
 package com.demo.controllers;
 
+import com.demo.com.demo.dto.SearchQueryDTO;
 import com.demo.model.Product;
 import com.demo.model.ProductDTO;
 import com.demo.service.ProductService;
+import com.demo.utils.CommonUtils;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ import java.util.Map;
 public class ElasticSearchController {
     @Autowired
     ProductService productService;
+    @Autowired
+    CommonUtils commonUtils;
 
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Product> saveCustomElements(@RequestBody Product product) throws Exception {
@@ -50,6 +54,13 @@ public class ElasticSearchController {
         productService.saveProducts();
 
     }
+    @RequestMapping(method = RequestMethod.GET, value = "/partial/search",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProductDTO getItemSearch(@RequestParam Map queryMap) throws Exception {
+        SearchQueryDTO searchDTO= commonUtils.createSearchQueryDTO(queryMap);
+        ProductDTO productDTO  = productService.findByCriteria(searchDTO);
+        return productDTO;
+    }
+
 
 }
 

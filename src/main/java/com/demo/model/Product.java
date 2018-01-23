@@ -15,18 +15,11 @@ public class Product {
     private String id;
     @Field(type = FieldType.String)
     private String name;
-    private String description;
-    //private String place;
     private String category;
     private String subCategory;
     private double price;
     private String code;
     private String brand;
-   /* @Field(type=FieldType.Object, index= FieldIndex.not_analyzed)
-    Map<String,String> attributes;
-*/
-
-
     public Product() {
 
     }
@@ -47,13 +40,6 @@ public class Product {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getCategory() {
         return category;
@@ -114,7 +100,6 @@ public class Product {
     public Product(String id, String name, String description, String category, String subCategory, float price, String code, String brand, String size, String color) {
         this.id = id;
         this.name = name;
-        this.description = description;
         this.category = category;
         this.subCategory = subCategory;
         this.price = price;

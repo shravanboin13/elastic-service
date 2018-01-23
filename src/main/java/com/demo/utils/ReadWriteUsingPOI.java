@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.demo.model.Attributes;
 import com.demo.model.Product;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -56,7 +57,7 @@ public class ReadWriteUsingPOI {
             while (cells.hasNext()) {
                 cell = (XSSFCell) cells.next();
               if(col<8){
-                    createProduct(product,cell,col);
+                    createProduct(product,cell,cell.getColumnIndex());
                 }
                 col++;
             }//while

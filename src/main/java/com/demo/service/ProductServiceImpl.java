@@ -1,5 +1,6 @@
 package com.demo.service;
 
+import com.demo.com.demo.dto.SearchQueryDTO;
 import com.demo.dao.ProductRepository;
 import com.demo.model.Product;
 import com.demo.model.ProductDTO;
@@ -20,6 +21,12 @@ import java.util.stream.StreamSupport;
 @Service
 public class ProductServiceImpl implements ProductService {
     private static final String filePath = "D:\\shravan\\files\\checkin.xlsx";
+
+    @Override
+    public ProductDTO findByCriteria(SearchQueryDTO searchDTO) {
+        return productRepository.getAllProductsByCriteria(searchDTO);
+       }
+
     @Autowired
     ProductRepository productRepository;
     @Autowired
@@ -51,10 +58,6 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByName(name,pageRequest);
     }
 
-    @Override
-    public Page<Product> findByDescription(String description, PageRequest pageRequest) {
-        return productRepository.findByDescription(description,pageRequest);
-    }
 
     @Override
     public ProductDTO findByContent(String content) {
