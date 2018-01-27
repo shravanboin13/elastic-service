@@ -42,13 +42,13 @@ public class ElasticSearchController {
     public void delete(@PathVariable("id") String id) throws Exception {
             productService.delete(id);
         }
-    @RequestMapping(method = RequestMethod.GET, value = "/partial/{content}",produces = MediaType.APPLICATION_JSON_VALUE)
+    /*@RequestMapping(method = RequestMethod.GET, value = "/partial/{content}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ProductDTO getCustomElements(@PathVariable("content") String content) throws Exception {
 
         ProductDTO al = productService.findByContent(content);
         return al;
     }
-    @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
+   */ @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveProductsBulkFromExcel() throws Exception {
 
         productService.saveProducts();
@@ -57,9 +57,16 @@ public class ElasticSearchController {
     @RequestMapping(method = RequestMethod.GET, value = "/partial/search",produces = MediaType.APPLICATION_JSON_VALUE)
     public ProductDTO getItemSearch(@RequestParam Map queryMap) throws Exception {
         SearchQueryDTO searchDTO= commonUtils.createSearchQueryDTO(queryMap);
-        ProductDTO productDTO  = productService.findByCriteria(searchDTO);
+        ProductDTO productDTO  = productService.findByCriteria(queryMap);
         return productDTO;
     }
+    @RequestMapping(method = RequestMethod.POST, value = "/partial",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProductDTO doPartialSearch(@RequestBody SearchQueryDTO searchQueryDTO) throws Exception {
+       // SearchQueryDTO searchDTO= commonUtils.createSearchQueryDTO(queryMap);
+        ProductDTO productDTO  = productService.findByCriteriaWithList(searchQueryDTO);
+        return productDTO;
+    }
+
 
 
 }

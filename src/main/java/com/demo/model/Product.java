@@ -1,25 +1,78 @@
 package com.demo.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldIndex;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 @Document(indexName="products",type="products")
-public class Product {
+public class Product implements Serializable{
     @Id
     private String id;
-    @Field(type = FieldType.String)
-    private String name;
+
+    public String getPlace() {
+        return place;
+    }
+
+    public void setPlace(String place) {
+        this.place = place;
+    }
+
+    public Product(String id, String place, String category, String type, Map<String, String> attributes, String code) {
+        this.id = id;
+        this.place = place;
+        this.category = category;
+        this.type = type;
+        this.attributes = attributes;
+        this.code = code;
+    }
+
+    public String getCategory() {
+
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    private String place;
     private String category;
-    private String subCategory;
-    private double price;
+    private String type;
+
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Field(type = FieldType.Nested)
+    //@Mapping(mappingPath = "/mappings/mapping.json")
+    Map<String,String> attributes;
+//    private double price;
     private String code;
-    private String brand;
+   // private String brand;
     public Product() {
 
     }
@@ -32,32 +85,8 @@ public class Product {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getSubCategory() {
-        return subCategory;
-    }
-
-    public void setSubCategory(String subCategory) {
-        this.subCategory = subCategory;
-    }
-
-    public double getPrice() {
+   /* public double getPrice() {
         return price;
     }
 
@@ -97,18 +126,8 @@ public class Product {
         this.color = color;
     }
 
-    public Product(String id, String name, String description, String category, String subCategory, float price, String code, String brand, String size, String color) {
-        this.id = id;
-        this.name = name;
-        this.category = category;
-        this.subCategory = subCategory;
-        this.price = price;
-        this.code = code;
-        this.brand = brand;
-        this.size = size;
-        this.color = color;
-    }
+   */
 
-    private String size;
-   private String color;
+//    private String size;
+//   private String color;
 }

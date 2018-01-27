@@ -4,31 +4,28 @@ import java.util.List;
 import java.util.Map;
 
 public class ProductDTO {
-    public ProductDTO(List<Product> result, Map<String, List<String>> attributes) {
-        this.result = result;
-        this.attributes = attributes;
-    }
-
     public ProductDTO() {
     }
 
-    public List<Product> getResult() {
-        return result;
+
+    public List<Product> getProducts() {
+        return products;
     }
 
-    public void setResult(List<Product> result) {
-        this.result = result;
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 
-    public Map<String, List<String>> getAttributes() {
+    List<Product> products;
+
+    public Map<String, Map<String, Long>> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, List<String>> attributes) {
+    public void setAttributes(Map<String, Map<String, Long>> attributes) {
         this.attributes = attributes;
     }
 
-    List<Product> result;
-    Map<String,List<String>> attributes;
+    Map<String,Map<String,Long>> attributes;
 
 }

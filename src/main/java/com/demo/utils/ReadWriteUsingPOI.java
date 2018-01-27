@@ -45,8 +45,10 @@ public class ReadWriteUsingPOI {
         //loop through rows
         while (rows.hasNext())
         {
+            Map<String,String> al = new HashMap<String,String>();
 
             Product product = new Product();
+            product.setAttributes(al);
             row = (XSSFRow) rows.next();
             if(rowCount==0){
                 rowCount++;
@@ -56,7 +58,8 @@ public class ReadWriteUsingPOI {
             int col =0;
             while (cells.hasNext()) {
                 cell = (XSSFCell) cells.next();
-              if(col<8){
+                if(col<8){
+//                  product.setAttributes(al);
                     createProduct(product,cell,cell.getColumnIndex());
                 }
                 col++;
@@ -72,29 +75,36 @@ public class ReadWriteUsingPOI {
         switch (col){
 
             case 0:
-                product.setCategory(cell.getStringCellValue());
+                product.setPlace(cell.getStringCellValue());
                 break;
             case 1:
-                product.setSubCategory(cell.getStringCellValue());
+                product.setType(cell.getStringCellValue());
                 break;
             case 2:
-                product.setName(cell.getStringCellValue());
+                product.setCategory(cell.getStringCellValue());
                 break;
             case 3:
                 product.setCode(cell.getStringCellValue());
                 break;
             case 4:
-                product.setBrand(cell.getStringCellValue());
+                product.getAttributes().put("Brand",cell.getStringCellValue());
+//                product.setBrand(cell.getStringCellValue());
                 break;
             case 5:
                 if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
-                product.setPrice(cell.getNumericCellValue());
+                {
+                    product.getAttributes().put("Price",String.valueOf(cell.getNumericCellValue()));
+
+                }
+                // product.setPrice(cell.getNumericCellValue());
                 break;
             case 6:
-                product.setSize(cell.getStringCellValue());
+                product.getAttributes().put("Size",cell.getStringCellValue());
+                //  product.setSize(cell.getStringCellValue());
                 break;
             case 7:
-                product.setColor(cell.getStringCellValue());
+                product.getAttributes().put("Color",cell.getStringCellValue());
+//                product.setColor(cell.getStringCellValue());
                 break;
 
         }

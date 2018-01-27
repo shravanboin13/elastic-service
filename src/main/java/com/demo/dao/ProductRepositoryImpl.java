@@ -1,163 +1,269 @@
 package com.demo.dao;
 
 import com.demo.com.demo.dto.SearchQueryDTO;
+import com.demo.constants.AttributeMaps;
 import com.demo.model.Product;
 import com.demo.model.ProductDTO;
 import com.demo.utils.MyResultExtractor;
-import com.google.common.collect.Lists;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang.StringUtils;
-import org.apache.lucene.queryparser.xml.FilterBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.search.MatchQuery;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+//import org.elasticsearch.search.aggregations.bucket.filters.FiltersAggregator.KeyedFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.DefaultResultMapper;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ResultsExtractor;
+import org.springframework.data.elasticsearch.core.query.IndexQuery;
+import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
-import static org.elasticsearch.search.aggregations.AggregationBuilders.filter;
 import static org.elasticsearch.search.aggregations.AggregationBuilders.terms;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
+    private static final String ATTRIBUTES = "attributes";
     @Autowired
     ElasticsearchOperations elasticsearchTemplate;
+
     @Override
-    public ProductDTO getAllMatchedProducts(String content) {
+    public ProductDTO getAllProductsByCriteria(Map searchQueryDTO) {
+        boolean isAddedAggreagtions =  false;
+        AttributeMaps.intializeMaps();
+        NativeSearchQueryBuilder nativeQuery = new NativeSearchQueryBuilder();
+        QueryBuilder multiMatchQueryContent = null;
+        BoolQueryBuilder boolQueryBuilder = boolQuery();
+       createQueries(searchQueryDTO,boolQueryBuilder);
+          /*if(null!=searchQueryDTO.getContent()){
+            multiMatchQueryContent = matchQuery("category",searchQueryDTO.getContent());
+                    boolQueryBuilder.must(multiMatchQueryContent);
+          }
 
-        SearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(multiMatchQuery(content,"category","subCategory","name"))
-                .withSearchType(SearchType.DEFAULT)
-                .withIndices("products").withTypes("products")
-                .addAggregation(terms("color").field("color"))
-                .addAggregation(terms("brand").field("brand"))
-                .addAggregation(terms("size").field("size"))
-                 .build();
-
-        SearchQuery searchQuery1 = new NativeSearchQueryBuilder()
-                .withQuery(multiMatchQuery(content,"category","subCategory","name","size"))
-                .withSearchType(SearchType.DEFAULT)
-                .withIndices("products").withTypes("products")
-                .build();
-        List<Product> products = elasticsearchTemplate
-                .queryForList(searchQuery1, Product.class);
-         ProductDTO result =null;
-        // when
-       // return elasticsearchTemplate.query(searchQuery,new Re);
-         result = elasticsearchTemplate.query(searchQuery, new ResultsExtractor<ProductDTO>() {
-            @Override
-            public ProductDTO extract(SearchResponse response) {
-                ProductDTO productDTO = new ProductDTO();
-                Map<String,List<String>> attributes = new HashMap<String,List<String>>();
-                List<String> attributeValuues  = new ArrayList<String>();
-               org.elasticsearch.search.aggregations.bucket.terms.Terms termsColours  = response.getAggregations().get("color");
-                org.elasticsearch.search.aggregations.bucket.terms.Terms termsBrands  = response.getAggregations().get("brand");
-                org.elasticsearch.search.aggregations.bucket.terms.Terms termsSize  = response.getAggregations().get("size");
-
-                setIntoMap(attributes, termsColours, "color");
-                setIntoMap(attributes, termsBrands, "brand");
-                setIntoMap(attributes, termsSize, "size");
-
-                List<Product> alProduct =  new DefaultResultMapper().
-                          mapResults(response, Product.class, new PageRequest( 0, 15)).getContent();
-                productDTO.setAttributes(attributes);
-                productDTO.setResult(alProduct);
-                return productDTO;
+        if(!StringUtils.isEmpty(searchQueryDTO.getBrand())){
+            QueryBuilder termBrand = nestedQuery("attributes",matchQuery("attributes.Brand",searchQueryDTO.getBrand()));
+            boolQueryBuilder.must(termBrand);
+        }
+        if(!StringUtils.isEmpty(searchQueryDTO.getSize())) {
+            QueryBuilder termSize = nestedQuery("attributes",matchQuery("attributes.Size",searchQueryDTO.getSize()));
+            boolQueryBuilder.must(termSize);
+           }
+        if (!StringUtils.isEmpty(searchQueryDTO.getColor())) {
+            QueryBuilder termSize = nestedQuery("attributes",matchQuery("attributes.Color",searchQueryDTO.getColor()));
+            boolQueryBuilder.must(termSize);
+        }*/
+        nativeQuery.withQuery(boolQueryBuilder);
+        nativeQuery.withSearchType(SearchType.DEFAULT).withIndices("products").withTypes("products");
+        isAddedAggreagtions =  createAggregations(nativeQuery,searchQueryDTO);
+         /*   if (StringUtils.isEmpty(searchQueryDTO.getColor())){
+                isAddedAggreagtions =true;
+                nativeQuery.addAggregation(AggregationBuilders.nested("Color").path("attributes").
+                        subAggregation(terms("Color").field("attributes.Color")));
             }
-        });
-
+                if (StringUtils.isEmpty(searchQueryDTO.getBrand())){
+                isAddedAggreagtions =true;
+                nativeQuery.addAggregation(AggregationBuilders.nested("Brand").path("attributes").subAggregation(terms("Brand").field("attributes.Brand")));
+            }
+            if (StringUtils.isEmpty(searchQueryDTO.getSize()))
+            {
+                isAddedAggreagtions =true;
+                nativeQuery.addAggregation(AggregationBuilders.nested("Size").path("attributes").subAggregation(terms("Size").field("attributes.Size")));
+            }*/
+        SearchQuery searchQuery =  nativeQuery.build();
+        MyResultExtractor resultsExtractor = new MyResultExtractor();
+        resultsExtractor.setAddedAggreagtions(isAddedAggreagtions);
+        elasticsearchTemplate.putMapping(Product.class);
+         ProductDTO result = elasticsearchTemplate.query(searchQuery, resultsExtractor);
         return result;
     }
 
     @Override
     public ProductDTO getAllProductsByCriteria(SearchQueryDTO searchQueryDTO) {
         boolean isAddedAggreagtions =  false;
+        AttributeMaps.intializeMaps();
         NativeSearchQueryBuilder nativeQuery = new NativeSearchQueryBuilder();
         QueryBuilder multiMatchQueryContent = null;
-        QueryBuilder matchQueryBrand = null;
-        QueryBuilder matchQueryColor = null;
-        QueryBuilder matchQuerySize = null;
-        List<FilterBuilder> filters = Lists.newArrayList();
-        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-                if(null!=searchQueryDTO.getContent()){
-            multiMatchQueryContent = matchQuery("category",searchQueryDTO.getContent());
-                    boolQueryBuilder.must(multiMatchQueryContent);
-          }
-        if(!StringUtils.isEmpty(searchQueryDTO.getBrand())){
-           boolQueryBuilder.must(matchQuery("brand",searchQueryDTO.getBrand()));
-           }
-        if(!StringUtils.isEmpty(searchQueryDTO.getSize())) {
-             boolQueryBuilder.must(matchQuery( "size",searchQueryDTO.getSize()));
-           }
-        if (!StringUtils.isEmpty(searchQueryDTO.getColor())) {
-            boolQueryBuilder.must(matchQuery( "color",searchQueryDTO.getColor()));
-        }
-        nativeQuery.withQuery(boolQueryBuilder);
+        BoolQueryBuilder boolQueryBuilder = boolQuery();
+        createQueries(searchQueryDTO,boolQueryBuilder);
+                 nativeQuery.withQuery(boolQueryBuilder);
         nativeQuery.withSearchType(SearchType.DEFAULT).withIndices("products").withTypes("products");
-            if (StringUtils.isEmpty(searchQueryDTO.getColor()))
-            {
-                isAddedAggreagtions =true;
-                nativeQuery.addAggregation(terms("color").field("color"));
-            }
-                if (StringUtils.isEmpty(searchQueryDTO.getBrand()))
-            {
-                isAddedAggreagtions =true;
-                nativeQuery.addAggregation(terms("brand").field("brand"));
-            }
-            if (StringUtils.isEmpty(searchQueryDTO.getSize()))
-            {
-                isAddedAggreagtions =true;
-                nativeQuery.addAggregation(terms("size").field("size"));
-
-            }
-           SearchQuery searchQuery =  nativeQuery.build();
+        isAddedAggreagtions =  createAggregations(nativeQuery,searchQueryDTO);
+                 SearchQuery searchQuery =  nativeQuery.build();
         MyResultExtractor resultsExtractor = new MyResultExtractor();
         resultsExtractor.setAddedAggreagtions(isAddedAggreagtions);
+        elasticsearchTemplate.putMapping(Product.class);
         ProductDTO result = elasticsearchTemplate.query(searchQuery, resultsExtractor);
-
-            /*ProductDTO result = elasticsearchTemplate.query(searchQuery, new ResultsExtractor<ProductDTO>() {
-            @Override
-            public ProductDTO extract(SearchResponse response) {
-                ProductDTO productDTO = new ProductDTO();
-                Map<String,List<String>> attributes = new HashMap<String,List<String>>();
-                List<String> attributeValuues  = new ArrayList<String>();
-                //if(isAddedAggreagtions)
-                {
-                    org.elasticsearch.search.aggregations.bucket.terms.Terms termsColours = response.getAggregations().get("color");
-                    org.elasticsearch.search.aggregations.bucket.terms.Terms termsBrands = response.getAggregations().get("brand");
-                    org.elasticsearch.search.aggregations.bucket.terms.Terms termsSize = response.getAggregations().get("size");
-
-                    setIntoMap(attributes, termsColours, "color");
-                    setIntoMap(attributes, termsBrands, "brand");
-                    setIntoMap(attributes, termsSize, "size");
-                }
-                List<Product> alProduct =  new DefaultResultMapper().
-                        mapResults(response, Product.class, new PageRequest( 0, 15)).getContent();
-                productDTO.setAttributes(attributes);
-                productDTO.setResult(alProduct);
-                return productDTO;
-            }
-        });*/
-
         return result;
+    }
 
+    @Override
+    public Product saveProduct(Product product) {
+        elasticsearchTemplate.createIndex(Product.class);
+        elasticsearchTemplate.putMapping(Product.class);
+        IndexQuery indexQuery = new IndexQueryBuilder()
+                .withId(product.getId())
+                .withIndexName("products").withObject(product)
+                .withType("products").build();;
+        elasticsearchTemplate.index(indexQuery);
+        return product;
+    }
+
+    private boolean createAggregations(NativeSearchQueryBuilder nativeQuery, Map searchQueryDTO) {
+        //Set<String> keys = searchQueryDTO.keySet();
+        boolean isAddedAggragations = false;
+       Map<String,Integer> attribiteesMap = getAttributesMap((String)searchQueryDTO.get("category"));
+        Set<String> keys = attribiteesMap.keySet();
+
+        //below code is useful for converational ui
+       /* Map<Integer,String> orderMap = getOrderMap((String)searchQueryDTO.get("category"));
+
+        int highestOrder = getHighestOrder(searchQueryDTO,attribiteesMap);
+        String attributeToAggregate = orderMap.get(highestOrder+1);
+        if(null!=attributeToAggregate) {
+            nativeQuery.addAggregation(AggregationBuilders.nested(attributeToAggregate).path(ATTRIBUTES).
+                    subAggregation(terms(attributeToAggregate).field(ATTRIBUTES + "." + attributeToAggregate)));
+            isAddedAggragations = true;
+        }
+*/
+        for(String key:keys) {
+            if (!"Category".equalsIgnoreCase(key)) {
+
+                nativeQuery.addAggregation(AggregationBuilders.nested(key).path(ATTRIBUTES).
+                        subAggregation(terms(key).field(ATTRIBUTES + "." + key)));
+                isAddedAggragations = true;
+            }
+        }
+        return isAddedAggragations;
 
     }
-            private void setIntoMap(Map<String,List<String>> attributesMap , org.elasticsearch.search.aggregations.bucket.terms.Terms terms,String attributeName) {
+    private boolean createAggregations(NativeSearchQueryBuilder nativeQuery, SearchQueryDTO searchQueryDTO) {
+        //Set<String> keys = searchQueryDTO.keySet();
+        boolean isAddedAggragations = false;
+        Map<String,Integer> attribiteesMap = getAttributesMap((String)searchQueryDTO.getProductType());
+        Set<String> keys = attribiteesMap.keySet();
+
+        //below code is useful for converational ui
+       /* Map<Integer,String> orderMap = getOrderMap((String)searchQueryDTO.get("category"));
+
+        int highestOrder = getHighestOrder(searchQueryDTO,attribiteesMap);
+        String attributeToAggregate = orderMap.get(highestOrder+1);
+        if(null!=attributeToAggregate) {
+            nativeQuery.addAggregation(AggregationBuilders.nested(attributeToAggregate).path(ATTRIBUTES).
+                    subAggregation(terms(attributeToAggregate).field(ATTRIBUTES + "." + attributeToAggregate)));
+            isAddedAggragations = true;
+        }
+*/
+        for(String key:keys) {
+            if (!"Category".equalsIgnoreCase(key)) {
+
+                nativeQuery.addAggregation(AggregationBuilders.nested(key).path(ATTRIBUTES).
+                        subAggregation(terms(key).field(ATTRIBUTES + "." + key)));
+                isAddedAggragations = true;
+            }
+        }
+        return isAddedAggragations;
+
+    }
+
+    private Map<Integer,String> getOrderMap(String category) {
+        if("Furniture".equalsIgnoreCase(category)){
+            return AttributeMaps.furnitureOrderMap;
+        }else if("Clothing".equalsIgnoreCase(category)){
+            return AttributeMaps.clothingOrderMap;
+        }else if("Wearable".equalsIgnoreCase(category)){
+            return AttributeMaps.wearableOrderMap;
+        }
+        return null;
+    }
+
+    private int getHighestOrder(Map searchQuery, Map<String, Integer> map) {
+        int max = 0;
+        if(null!=searchQuery && null!=map){
+            Set<String> keys = searchQuery.keySet();
+            for (String key : keys) {
+                if (null != map.get(key)) {
+                    if (max < map.get(key)) {
+                        max = map.get(key);
+                    }
+                }
+            }
+        }
+        return max;
+
+    }
+
+    private Map<String,Integer> getAttributesMap(String category) {
+        if("Furniture".equalsIgnoreCase(category)){
+            return AttributeMaps.furnitureAttributeMap;
+        }else if("Clothing".equalsIgnoreCase(category)){
+            return AttributeMaps.clothingAttributeMap;
+        }else if("Wearable".equalsIgnoreCase(category)){
+            return AttributeMaps.wearableAttributeMap;
+        }if("Tv's".equalsIgnoreCase(category)){
+            return AttributeMaps.tvAttributeMap;
+        }else if("TV Mounts".equalsIgnoreCase(category)){
+            return AttributeMaps.tvMountAttributeMap;
+        }else if("Blu-Ray & DVD Players".equalsIgnoreCase(category)){
+            return AttributeMaps.bluRayDVDPlayers;
+        }if("Media Streaming".equalsIgnoreCase(category)){
+            return AttributeMaps.mediaStreaminAttributeMap;
+        }else if("Movies & TV Shows".equalsIgnoreCase(category)){
+            return AttributeMaps.movieTvShowsAttributeMap;
+        }else if("Laptops".equalsIgnoreCase(category)){
+            return AttributeMaps.laptopsAttributeMap;
+        }if("Software".equalsIgnoreCase(category)){
+            return AttributeMaps.softwaresAttributeMap;
+        }else if("Printing and Scanning".equalsIgnoreCase(category)){
+            return AttributeMaps.printersAttributeMap;
+        }else if("Cameras".equalsIgnoreCase(category)){
+            return AttributeMaps.camerasAttributeMap;
+        }if("Refrigerator".equalsIgnoreCase(category)){
+            return AttributeMaps.refrigeratorsAttributeMap;
+        }else if("Fans".equalsIgnoreCase(category)){
+            return AttributeMaps.fansAttributeMap;
+        }
+        return null;
+    }
+
+    private void createQueries(Map<String,String> searchQueryMap, BoolQueryBuilder boolQueryBuilder) {
+        Set<String> keys = searchQueryMap.keySet();
+        for(String key:keys){
+            if("category".equalsIgnoreCase(key)){
+            boolQueryBuilder.must(matchQuery("type",searchQueryMap.get(key)));
+            }else{
+                //nestedQuery("attributes",matchQuery("attributes.Brand",searchQueryDTO.getBrand()));
+                //
+                boolQueryBuilder.must(nestedQuery(ATTRIBUTES,matchQuery(ATTRIBUTES+"."+key,searchQueryMap.get(key))));
+
+            }
+        }
+
+    }
+    private void createQueries(SearchQueryDTO searchQueryDTO, BoolQueryBuilder boolQueryBuilder) {
+        String productType = searchQueryDTO.getProductType();
+        boolQueryBuilder.must(matchQuery("type", productType));
+
+        Set<String> keys = searchQueryDTO.getAttributes().keySet();
+        for (String key : keys) {
+            List<String> attributeValuesList = searchQueryDTO.getAttributes().get(key);
+            BoolQueryBuilder valueVuilder = boolQuery();
+            if (null != attributeValuesList && searchQueryDTO.getAttributes().size() > 0) {
+                for (String value : attributeValuesList) {
+                    valueVuilder.should(nestedQuery(ATTRIBUTES, matchQuery(ATTRIBUTES + "." + key, value)));
+                }
+                boolQueryBuilder.must(valueVuilder);
+            }
+
+        }
+    }
+
+    private void setIntoMap(Map<String,List<String>> attributesMap , org.elasticsearch.search.aggregations.bucket.terms.Terms terms,String attributeName) {
         List<String> attributeValueList = new ArrayList<String>();
         if(null!=terms && null!=terms.getBuckets() && terms.getBuckets().size()>1) {
             for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : terms.getBuckets()) {
@@ -167,4 +273,6 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
         }
         }
+
+
 }

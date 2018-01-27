@@ -1,0 +1,18 @@
+{
+  "mappings":{
+  "product":{
+    "dynamic-templates":[
+      {
+        "strings":{
+          "match_mapping_type":"string","path_match":"attributes.*",
+          "mapping":{
+            "type":"string",
+            "index":"not_analyzed"
+          }
+        }
+      }
+    ]
+  }
+
+}
+}

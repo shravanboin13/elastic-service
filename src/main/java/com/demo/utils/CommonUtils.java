@@ -11,7 +11,7 @@ import java.util.Map;
 public class CommonUtils {
     public SearchQueryDTO createSearchQueryDTO(Map queryMap) {
         SearchQueryDTO searchDTO = new SearchQueryDTO();
-        if(!StringUtils.isEmpty(queryMap.get("content"))){
+       /* if(!StringUtils.isEmpty(queryMap.get("content"))){
             searchDTO.setContent((String) queryMap.get("content"));
         }
         if(!StringUtils.isEmpty(queryMap.get("color"))){
@@ -23,7 +23,7 @@ public class CommonUtils {
         if(!StringUtils.isEmpty(queryMap.get("size"))){
             searchDTO.setSize((String) queryMap.get("size"));
         }
-
+*/
         /*if(!StringUtils.isEmpty(queryMap.get("color"))){
            String[] aColor =  (String [])queryMap.get("color");
            List<String> alColor = new ArrayList<String>();

@@ -3,11 +3,11 @@ package com.demo.service;
 import com.demo.com.demo.dto.SearchQueryDTO;
 import com.demo.model.Product;
 import com.demo.model.ProductDTO;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ProductService {
     Product save(Product produt);
@@ -17,8 +17,9 @@ public interface ProductService {
     List<Product> findAll();
     Page<Product> findByName(String name, PageRequest pageRequest);
 
-    ProductDTO findByContent(String content);
     void saveProducts() throws Exception;
 
-    ProductDTO findByCriteria(SearchQueryDTO searchDTO);
+    ProductDTO findByCriteria(Map searchDTO);
+
+    ProductDTO findByCriteriaWithList(SearchQueryDTO searchQueryDTO);
 }

@@ -1,15 +1,16 @@
 package com.demo.com.demo.dto;
 
 import java.util.List;
+import java.util.Map;
 
 public class SearchQueryDTO {
-    private String content;
+   /* private String content;
 
 
-   /* private List<String> alColor;
+   *//* private List<String> alColor;
     private  List<String>alSize;
     private List<String> alBrand;
-   */
+   *//*
     public void setColor(String color) {
         this.color = color;
     }
@@ -46,8 +47,27 @@ public class SearchQueryDTO {
         return size;
     }
 
+   */ public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
+    public String productType;
+
     public SearchQueryDTO() {
     }
 
+    public Map<String, List<String>> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, List<String>> attributes) {
+        this.attributes = attributes;
+    }
+
+    private Map<String,List<String>> attributes;
 
    }

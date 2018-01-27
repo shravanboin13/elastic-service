@@ -1,23 +1,13 @@
 package com.demo.model;
 
+import jdk.nashorn.internal.objects.annotations.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.io.Serializable;
-@Document(indexName="attributes",type="attributes")
 public class Attributes implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Id
-    private String id;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
