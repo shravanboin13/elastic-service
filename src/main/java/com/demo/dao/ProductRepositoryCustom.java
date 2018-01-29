@@ -4,6 +4,7 @@ import com.demo.com.demo.dto.SearchQueryDTO;
 import com.demo.model.Product;
 import com.demo.model.ProductDTO;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ProductRepositoryCustom {
@@ -11,6 +12,7 @@ public interface ProductRepositoryCustom {
     public ProductDTO getAllProductsByCriteria(Map searchQueryDTO);
     ProductDTO getAllProductsByCriteria(SearchQueryDTO searchQueryDTO);
     Product saveProduct(Product product);
+    List<String> getAllProductTypes();
   }
 
 

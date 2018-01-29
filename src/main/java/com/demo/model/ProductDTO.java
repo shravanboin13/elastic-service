@@ -18,14 +18,15 @@ public class ProductDTO {
 
     List<Product> products;
 
-    public Map<String, Map<String, Long>> getAttributes() {
+
+    public Map<String, Map<Object, Long>> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, Map<String, Long>> attributes) {
+    public void setAttributes(Map<String, Map<Object, Long>> attributes) {
         this.attributes = attributes;
     }
 
-    Map<String,Map<String,Long>> attributes;
+    Map<String,Map<Object,Long>> attributes;
 
 }

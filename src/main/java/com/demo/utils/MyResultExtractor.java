@@ -31,7 +31,7 @@ public class MyResultExtractor implements ResultsExtractor<ProductDTO> {
     @Override
     public ProductDTO extract(SearchResponse response) {
         ProductDTO productDTO = new ProductDTO();
-        Map<String, Map<String,Long>> attributes = new HashMap<String, Map<String,Long>>();
+        Map<String, Map<Object,Long>> attributes = new HashMap<String, Map<Object,Long>>();
         List<String> attributeValuues = new ArrayList<String>();
         if (isAddedAggreagtions && null!= response.getAggregations()) {
             Map<String,Aggregation> oMap =response.getAggregations().getAsMap();
@@ -53,7 +53,7 @@ public class MyResultExtractor implements ResultsExtractor<ProductDTO> {
         return productDTO;
     }
 
-    private void setIntoMap(Map<String, Map<String, Long>> attributesMap, Terms terms, String attributeName) {
+    private void setIntoMap(Map<String, Map<Object, Long>> attributesMap, Terms terms, String attributeName) {
         /*List<String> attributeValueList = new ArrayList<String>();
         if (null != terms && null != terms.getBuckets() && terms.getBuckets().size() > 0) {
             for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : terms.getBuckets()) {
@@ -63,11 +63,11 @@ public class MyResultExtractor implements ResultsExtractor<ProductDTO> {
             attributesMap.put(attributeName, attributeValueList);
 
         }*/
-        Map<String,Long> attributeValueList = new HashMap<String,Long>();
+        Map<Object,Long> attributeValueList = new HashMap<Object, Long>();
         if (null != terms && null != terms.getBuckets() && terms.getBuckets().size() > 0) {
             for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : terms.getBuckets()) {
-
-                attributeValueList.put((String) bucket.getKey(),bucket.getDocCount());
+                if(null!=bucket.getKey()&& bucket.getDocCount()>0)
+                attributeValueList.put( bucket.getKey(),bucket.getDocCount());
             }
             attributesMap.put(attributeName, attributeValueList);
 

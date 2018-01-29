@@ -10,8 +10,11 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 //import org.elasticsearch.search.aggregations.bucket.filters.FiltersAggregator.KeyedFilter;
+import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.DefaultResultMapper;
@@ -41,23 +44,6 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         QueryBuilder multiMatchQueryContent = null;
         BoolQueryBuilder boolQueryBuilder = boolQuery();
        createQueries(searchQueryDTO,boolQueryBuilder);
-          /*if(null!=searchQueryDTO.getContent()){
-            multiMatchQueryContent = matchQuery("category",searchQueryDTO.getContent());
-                    boolQueryBuilder.must(multiMatchQueryContent);
-          }
-
-        if(!StringUtils.isEmpty(searchQueryDTO.getBrand())){
-            QueryBuilder termBrand = nestedQuery("attributes",matchQuery("attributes.Brand",searchQueryDTO.getBrand()));
-            boolQueryBuilder.must(termBrand);
-        }
-        if(!StringUtils.isEmpty(searchQueryDTO.getSize())) {
-            QueryBuilder termSize = nestedQuery("attributes",matchQuery("attributes.Size",searchQueryDTO.getSize()));
-            boolQueryBuilder.must(termSize);
-           }
-        if (!StringUtils.isEmpty(searchQueryDTO.getColor())) {
-            QueryBuilder termSize = nestedQuery("attributes",matchQuery("attributes.Color",searchQueryDTO.getColor()));
-            boolQueryBuilder.must(termSize);
-        }*/
         nativeQuery.withQuery(boolQueryBuilder);
         nativeQuery.withSearchType(SearchType.DEFAULT).withIndices("products").withTypes("products");
         isAddedAggreagtions =  createAggregations(nativeQuery,searchQueryDTO);
@@ -112,6 +98,38 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .withType("products").build();;
         elasticsearchTemplate.index(indexQuery);
         return product;
+    }
+
+    @Override
+    public List<String> getAllProductTypes() {
+        NativeSearchQueryBuilder nativeQuery = new NativeSearchQueryBuilder();
+        nativeQuery.addAggregation(AggregationBuilders.terms("type").field("type"));
+        SearchQuery searchQuery =  nativeQuery.build();
+        List<String> productResult = elasticsearchTemplate.query(searchQuery, new ResultsExtractor<List<String>>() {
+
+                    @Override
+                    public List<String> extract(SearchResponse response) {
+                        List<String> productTypes= new ArrayList<String>();
+                        Map<String,Aggregation> oMap =response.getAggregations().getAsMap();
+                        Set<String> entries = oMap.keySet();
+                        for(String key:entries){
+                            Aggregation agg  = (Aggregation) oMap.get(key);
+                            final Terms terms = (Terms) agg;
+                            if (null != terms && null != terms.getBuckets() && terms.getBuckets().size() > 0) {
+                                for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : terms.getBuckets()) {
+                                    if(null!=bucket.getKey()&& bucket.getDocCount()>0)
+                                        productTypes.add((String)bucket.getKey());
+                                }
+
+                            }
+
+                            //
+                        }
+
+                        return productTypes;
+                    }
+                });
+       return productResult;
     }
 
     private boolean createAggregations(NativeSearchQueryBuilder nativeQuery, Map searchQueryDTO) {

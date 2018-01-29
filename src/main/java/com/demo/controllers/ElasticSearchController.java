@@ -32,6 +32,13 @@ public class ElasticSearchController {
         return new ResponseEntity<>(product1, HttpStatus.OK);
 
     }
+    @RequestMapping(method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Product> updateCustomElements(@RequestBody Product product) throws Exception {
+
+        Product product1 = productService.save(product);
+        return new ResponseEntity<>(product1, HttpStatus.OK);
+
+    }
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Product> getCustomElements() throws Exception {
 
@@ -42,18 +49,19 @@ public class ElasticSearchController {
     public void delete(@PathVariable("id") String id) throws Exception {
             productService.delete(id);
         }
-    /*@RequestMapping(method = RequestMethod.GET, value = "/partial/{content}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ProductDTO getCustomElements(@PathVariable("content") String content) throws Exception {
-
-        ProductDTO al = productService.findByContent(content);
-        return al;
-    }
-   */ @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
+     @RequestMapping(method = RequestMethod.POST, value = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveProductsBulkFromExcel() throws Exception {
 
         productService.saveProducts();
 
     }
+    @RequestMapping(method = RequestMethod.GET, value = "/productTypes",produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<String> getProductTypes() throws Exception {
+
+      return  productService.getAllProductTypes();
+
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/partial/search",produces = MediaType.APPLICATION_JSON_VALUE)
     public ProductDTO getItemSearch(@RequestParam Map queryMap) throws Exception {
         SearchQueryDTO searchDTO= commonUtils.createSearchQueryDTO(queryMap);

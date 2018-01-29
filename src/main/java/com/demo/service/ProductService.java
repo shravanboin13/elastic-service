@@ -22,4 +22,6 @@ public interface ProductService {
     ProductDTO findByCriteria(Map searchDTO);
 
     ProductDTO findByCriteriaWithList(SearchQueryDTO searchQueryDTO);
+
+    List<String> getAllProductTypes();
 }

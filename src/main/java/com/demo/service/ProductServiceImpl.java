@@ -34,6 +34,11 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
+    public List<String> getAllProductTypes() {
+        return productRepository.getAllProductTypes();
+    }
+
     @Autowired
     ProductRepository productRepository;
     @Autowired

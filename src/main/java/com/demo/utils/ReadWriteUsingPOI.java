@@ -45,7 +45,7 @@ public class ReadWriteUsingPOI {
         //loop through rows
         while (rows.hasNext())
         {
-            Map<String,String> al = new HashMap<String,String>();
+            Map<String,Object> al = new HashMap<String,Object>();
 
             Product product = new Product();
             product.setAttributes(al);
