@@ -102,6 +102,9 @@ public class AttributeMaps {
         tvAttributeMap.put("Resolution",5);
         tvAttributeMap.put("Technology",6);
         tvAttributeMap.put("Screen Type",7);
+        tvAttributeMap.put("TEchnology-SubType",8);
+            tvAttributeMap.put("Brand Subutype",9);
+
 
         mediaStreaminAttributeMap.put("Brand",1);
         mediaStreaminAttributeMap.put("Price",2);
